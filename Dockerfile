@@ -17,7 +17,10 @@ COPY --from=base /etc/passwd /etc/passwd
 COPY --from=base /etc/group  /etc/group
 
 # The binary is injected by goreleaser (CGO_ENABLED=0, fully static).
-COPY teleport-argocd-auth-proxy /teleport-argocd-auth-proxy
+# With dockers_v2, goreleaser places each platform's artifacts under
+# $TARGETPLATFORM/ in the build context, so the ARG is required.
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/teleport-argocd-auth-proxy /teleport-argocd-auth-proxy
 
 USER nobody
 

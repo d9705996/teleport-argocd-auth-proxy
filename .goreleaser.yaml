@@ -31,7 +31,7 @@ archives:
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
     files:
       - README.md
       - LICENSE
@@ -50,12 +50,13 @@ changelog:
       - Merge pull request
       - Merge branch
 
-dockers:
+dockers_v2:
   - image_templates:
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}"
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:latest"
     use: buildx
     build_flag_templates:
-      - "--platform=linux/amd64"
+      - "--platform=linux/amd64,linux/arm64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description=JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
       - "--label=org.opencontainers.image.url=https://github.com/d9705996/teleport-argocd-auth-proxy"
@@ -64,29 +65,3 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
     dockerfile: Dockerfile
-    goarch: amd64
-
-  - image_templates:
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.description=JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
-      - "--label=org.opencontainers.image.url=https://github.com/d9705996/teleport-argocd-auth-proxy"
-      - "--label=org.opencontainers.image.source=https://github.com/d9705996/teleport-argocd-auth-proxy"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.licenses=MIT"
-    dockerfile: Dockerfile
-    goarch: arm64
-
-docker_manifests:
-  - name_template: "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}"
-    image_templates:
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/d9705996/teleport-argocd-auth-proxy:latest"
-    image_templates:
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
