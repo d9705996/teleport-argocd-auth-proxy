@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: teleport-argocd-auth-proxy
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: proxy
+    main: ./cmd/main.go
+    binary: teleport-argocd-auth-proxy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/d9705996/teleport-argocd-auth-proxy/cmd.buildVersion={{.Version}}
+      - -X github.com/d9705996/teleport-argocd-auth-proxy/cmd.buildCommit={{.Commit}}
+      - -X github.com/d9705996/teleport-argocd-auth-proxy/cmd.buildDate={{.Date}}
+
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+
+dockers:
+  - image_templates:
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
+      - "--label=org.opencontainers.image.url=https://github.com/d9705996/teleport-argocd-auth-proxy"
+      - "--label=org.opencontainers.image.source=https://github.com/d9705996/teleport-argocd-auth-proxy"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+    dockerfile: Dockerfile
+    goarch: amd64
+
+  - image_templates:
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
+      - "--label=org.opencontainers.image.url=https://github.com/d9705996/teleport-argocd-auth-proxy"
+      - "--label=org.opencontainers.image.source=https://github.com/d9705996/teleport-argocd-auth-proxy"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+    dockerfile: Dockerfile
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/d9705996/teleport-argocd-auth-proxy:latest"
+    image_templates:
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-amd64"
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}-arm64"
