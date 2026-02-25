@@ -51,17 +51,22 @@ changelog:
       - Merge branch
 
 dockers_v2:
-  - image_templates:
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:{{ .Tag }}"
-      - "ghcr.io/d9705996/teleport-argocd-auth-proxy:latest"
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/amd64,linux/arm64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.description=JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
-      - "--label=org.opencontainers.image.url=https://github.com/d9705996/teleport-argocd-auth-proxy"
-      - "--label=org.opencontainers.image.source=https://github.com/d9705996/teleport-argocd-auth-proxy"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.licenses=MIT"
-    dockerfile: Dockerfile
+  - dockerfile: Dockerfile
+    ids:
+      - proxy
+    images:
+      - "ghcr.io/d9705996/teleport-argocd-auth-proxy"
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.title": "{{ .ProjectName }}"
+      "org.opencontainers.image.description": "JWT-verifying reverse proxy between Gravitational Teleport and ArgoCD/Dex authproxy"
+      "org.opencontainers.image.url": "https://github.com/d9705996/teleport-argocd-auth-proxy"
+      "org.opencontainers.image.source": "https://github.com/d9705996/teleport-argocd-auth-proxy"
+      "org.opencontainers.image.version": "{{ .Version }}"
+      "org.opencontainers.image.revision": "{{ .FullCommit }}"
+      "org.opencontainers.image.licenses": "MIT"
