@@ -1,0 +1,40 @@
+# Validates that every commit in a pull request follows the Conventional Commits
+# specification. This complements the PR-title workflow: it guards individual
+# commits for teams that prefer rebase/merge strategies over squash merges.
+#
+# Conventional Commits format: <type>[optional scope]: <description>
+# Examples:  feat: add JWKS cache refresh metrics
+#            fix(proxy): strip X-Forwarded-For before forwarding
+#
+# See https://www.conventionalcommits.org for the full specification.
+
+name: Commit Messages
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commitlint:
+    name: Lint commit messages (Conventional Commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch enough history for wagoid/commitlint-action to compare
+          # all commits in the PR against the base branch.
+          fetch-depth: 0
+
+      - uses: wagoid/commitlint-action@v6
+        with:
+          configFile: commitlint.config.cjs
+          # Lint every commit from the base branch to HEAD.
+          firstParent: false
