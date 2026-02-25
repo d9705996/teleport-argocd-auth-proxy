@@ -33,8 +33,17 @@ jobs:
           # all commits in the PR against the base branch.
           fetch-depth: 0
 
-      - uses: wagoid/commitlint-action@v5
+      - uses: actions/setup-node@v4
         with:
-          configFile: commitlint.config.cjs
-          # Lint every commit from the base branch to HEAD.
-          firstParent: false
+          node-version: '20'
+
+      - name: Install commitlint
+        run: npm install --no-save @commitlint/cli @commitlint/config-conventional
+
+      - name: Lint commit messages
+        run: |
+          npx commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to   ${{ github.event.pull_request.head.sha }} \
+            --config commitlint.config.cjs \
+            --verbose
