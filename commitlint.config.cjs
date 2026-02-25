@@ -1,5 +1,5 @@
 // commitlint configuration – Conventional Commits rule set.
-// Used by wagoid/commitlint-action in .github/workflows/commitlint.yml.
+// Used by .github/workflows/commitlint.yml via npx commitlint.
 // See https://commitlint.js.org for full documentation.
 
 /** @type {import('@commitlint/types').UserConfig} */
@@ -24,10 +24,11 @@ module.exports = {
                 'revert',   // Reverts a previous commit
             ],
         ],
-        // Subject must not start with an uppercase letter but may contain
-        // uppercase abbreviations (e.g. CI, CD, API, URL) anywhere else.
-        // 'lower-case' (every character lowercase) is intentionally NOT used.
-        'subject-case': [2, 'always', 'start-with-lower-case'],
+        // Subject casing is intentionally not enforced here; the PR title
+        // workflow (amannn/action-semantic-pull-request) already rejects
+        // subjects that start with an uppercase letter via subjectPattern.
+        // This avoids false positives on uppercase abbreviations (CI, API…).
+        'subject-case': [0],
         // Header (type + scope + subject) must not exceed 100 characters.
         'header-max-length': [2, 'always', 100],
     },
