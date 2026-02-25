@@ -48,6 +48,11 @@ type Config struct {
 
 	// StripTeleportHeader removes the Teleport-Jwt-Assertion header before forwarding.
 	StripTeleportHeader bool `help:"Strip the Teleport JWT header before forwarding to backend." env:"STRIP_TELEPORT_HEADER" default:"true" name:"strip-teleport-header" negatable:""`
+
+	// TLSInsecureSkipVerify disables TLS certificate verification for JWKS fetches.
+	// WARNING: This should only be used in development/staging environments where the
+	// Teleport cluster certificate does not match the cluster's public address.
+	TLSInsecureSkipVerify bool `help:"Disable TLS certificate verification for JWKS fetches (insecure, use with caution)." env:"TLS_INSECURE_SKIP_VERIFY" default:"false" name:"tls-insecure-skip-verify"`
 }
 
 // Load parses CLI flags and environment variables into a Config, then returns it.

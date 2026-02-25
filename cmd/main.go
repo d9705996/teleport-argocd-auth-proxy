@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -38,13 +39,25 @@ func run() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	// ── Build the HTTP client used for JWKS fetches.
+	jwksHTTPClient := http.DefaultClient
+	if cfg.TLSInsecureSkipVerify {
+		logger.Warn("TLS certificate verification disabled for JWKS fetches — do not use in production")
+		jwksHTTPClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+			},
+		}
+	}
+
 	// ── Build the JWKS verifier (performs an initial key fetch).
-	verifier, err := jwt.NewVerifier(
+	verifier, err := jwt.NewVerifierWithHTTPClient(
 		ctx,
 		cfg.TeleportCluster,
 		cfg.JWKSRefreshInterval,
 		cfg.JWKSMinRefreshInterval,
 		logger,
+		jwksHTTPClient,
 	)
 	if err != nil {
 		logger.Error("failed to initialise JWT verifier", slog.String("error", err.Error()))
