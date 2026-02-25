@@ -24,8 +24,10 @@ module.exports = {
                 'revert',   // Reverts a previous commit
             ],
         ],
-        // Subject must start with a lowercase letter.
-        'subject-case': [2, 'always', 'lower-case'],
+        // Subject must not start with an uppercase letter but may contain
+        // uppercase abbreviations (e.g. CI, CD, API, URL) anywhere else.
+        // 'lower-case' (every character lowercase) is intentionally NOT used.
+        'subject-case': [2, 'always', 'start-with-lower-case'],
         // Header (type + scope + subject) must not exceed 100 characters.
         'header-max-length': [2, 'always', 100],
     },
