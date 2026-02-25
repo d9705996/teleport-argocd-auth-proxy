@@ -1,0 +1,1 @@
+# teleport-argocd-auth-proxy
