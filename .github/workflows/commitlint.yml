@@ -33,7 +33,7 @@ jobs:
           # all commits in the PR against the base branch.
           fetch-depth: 0
 
-      - uses: wagoid/commitlint-action@v6
+      - uses: wagoid/commitlint-action@v5
         with:
           configFile: commitlint.config.cjs
           # Lint every commit from the base branch to HEAD.

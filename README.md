@@ -165,16 +165,14 @@ internal/
   proxy/        ← reverse proxy handler
 .github/
   workflows/
-    lint.yml    ← golangci-lint on PRs targeting main
-    test.yml    ← go test -race on PRs targeting main
-    lint.yml    ← golangci-lint on PRs targeting main
-    test.yml    ← go test -race on PRs targeting main
-    release.yml ← goreleaser on v*.*.* tags → GHCR
+    lint.yml         ← golangci-lint on PRs targeting main
+    test.yml         ← go test -race on PRs targeting main
+    release.yml      ← goreleaser on v*.*.* tags → GHCR
     pr-title.yml     ← enforce Conventional Commits on PR titles
     commitlint.yml   ← enforce Conventional Commits on individual commits
 commitlint.config.cjs  ← commitlint rule set
 .goreleaser.yaml
-Dockerfile      ← distroless/static-debian12 image
+Dockerfile      ← scratch image (Alpine-sourced CA certs + nobody user)
 ```
 
 ## Contributing

@@ -26,4 +26,9 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          # goinstall compiles golangci-lint from source using the Go toolchain
+          # set up above, ensuring it is built with the same Go version as the
+          # project (go1.25.6) and avoids the "built with goX lower than target"
+          # error that pre-built binaries trigger.
+          install-mode: goinstall
           args: --timeout=5m
