@@ -114,6 +114,7 @@ All flags can be set via environment variables. CLI flags take precedence.
 | `--shutdown-timeout` | `SHUTDOWN_TIMEOUT` | `10s` | Graceful shutdown timeout |
 | `--log-level` | `LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
 | `--strip-teleport-header` / `--no-strip-teleport-header` | `STRIP_TELEPORT_HEADER` | `true` | Strip the JWT header before forwarding |
+| `--tls-insecure-skip-verify` | `TLS_INSECURE_SKIP_VERIFY` | `false` | Disable TLS certificate verification for JWKS fetches. Use only when the Teleport cluster cert does not match its public address (e.g. staging environments). |
 
 ### Dex `authproxy` connector example
 
