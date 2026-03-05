@@ -84,6 +84,18 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ── OIDC public endpoints pass-through (no JWT required).
+	// The OIDC discovery document and JWKS endpoint are public by spec (RFC 8414 /
+	// OpenID Connect Discovery). ArgoCD/Kargo server pods call these endpoints
+	// internally to initialise their OIDC provider and verify token signatures.
+	// Requiring a Teleport JWT here would prevent that internal call from
+	// succeeding (the server has no Teleport session), causing repeated
+	// "Initializing OIDC provider" retries and "failed to verify signature" errors.
+	if isOIDCPublicPath(r.URL.Path) {
+		h.rp.ServeHTTP(w, r)
+		return
+	}
+
 	// ── Extract the Teleport JWT.
 	rawToken := r.Header.Get(h.cfg.JWTHeader)
 	if rawToken == "" {
@@ -133,4 +145,27 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.rp.ServeHTTP(w, r)
+}
+
+// isOIDCPublicPath returns true for OIDC discovery and JWKS endpoints that
+// must be accessible without authentication. These paths contain only public
+// key material and metadata — no secrets are exposed.
+//
+//   - /.well-known/openid-configuration  (standard OIDC discovery)
+//   - /dex/.well-known/openid-configuration  (Dex embedded in ArgoCD/Kargo)
+//   - /api/dex/.well-known/openid-configuration  (ArgoCD Dex proxy prefix)
+//   - /keys  (Dex JWKS endpoint)
+//   - /dex/keys
+//   - /api/dex/keys
+func isOIDCPublicPath(path string) bool {
+	publicSuffixes := []string{
+		"/.well-known/openid-configuration",
+		"/keys",
+	}
+	for _, suffix := range publicSuffixes {
+		if path == suffix || strings.HasSuffix(path, suffix) {
+			return true
+		}
+	}
+	return false
 }

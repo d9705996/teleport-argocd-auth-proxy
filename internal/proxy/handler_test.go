@@ -207,3 +207,46 @@ func TestHandler_HealthCheck(t *testing.T) {
 		t.Errorf("expected 200 for /healthz, got %d", rec.Code)
 	}
 }
+
+func TestHandler_OIDCPublicPaths_NoAuthRequired(t *testing.T) {
+	// OIDC discovery and JWKS endpoints must be accessible without a JWT so that
+	// ArgoCD/Kargo server pods can initialise their OIDC provider from within the
+	// cluster (they have no Teleport session, so no JWT is present).
+	publicPaths := []string{
+		"/.well-known/openid-configuration",
+		"/api/dex/.well-known/openid-configuration",
+		"/dex/.well-known/openid-configuration",
+		"/keys",
+		"/api/dex/keys",
+		"/dex/keys",
+	}
+	for _, path := range publicPaths {
+		t.Run(path, func(t *testing.T) {
+			backendCalled := false
+			backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				backendCalled = true
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer backend.Close()
+
+			cfg := defaultConfig(backend.URL)
+			// No valid verifier — if auth were attempted it would fail.
+			h, err := proxy.New(cfg, &fakeVerifier{err: errors.New("should not be called")}, testLogger())
+			if err != nil {
+				t.Fatalf("create handler: %v", err)
+			}
+
+			req := httptest.NewRequest(http.MethodGet, path, nil)
+			// No JWT header — verifier must NOT be invoked.
+			rec := httptest.NewRecorder()
+			h.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusOK {
+				t.Errorf("expected 200 for OIDC public path %s, got %d", path, rec.Code)
+			}
+			if !backendCalled {
+				t.Errorf("backend was not called for OIDC public path %s", path)
+			}
+		})
+	}
+}
