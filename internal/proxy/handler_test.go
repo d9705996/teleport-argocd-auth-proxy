@@ -96,6 +96,8 @@ func TestHandler_ValidJWT_HeadersForwarded(t *testing.T) {
 
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedUser = r.Header.Get("X-Remote-User")
+		// Groups are sent as a single comma-separated header value so Dex
+		// authproxy (which uses Header.Get) can split them correctly.
 		receivedGroups = r.Header.Values("X-Remote-Group")
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -119,8 +121,12 @@ func TestHandler_ValidJWT_HeadersForwarded(t *testing.T) {
 	if receivedUser != "alice" {
 		t.Errorf("expected X-Remote-User=alice, got %q", receivedUser)
 	}
-	if len(receivedGroups) != 2 {
-		t.Errorf("expected 2 X-Remote-Group values, got %d: %v", len(receivedGroups), receivedGroups)
+	// Expect a single header value containing all roles joined by comma.
+	if len(receivedGroups) != 1 {
+		t.Errorf("expected 1 X-Remote-Group header, got %d: %v", len(receivedGroups), receivedGroups)
+	}
+	if receivedGroups[0] != "admin,dev" {
+		t.Errorf("expected X-Remote-Group=admin,dev, got %q", receivedGroups[0])
 	}
 }
 

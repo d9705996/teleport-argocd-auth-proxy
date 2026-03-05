@@ -123,11 +123,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// ── Inject identity headers expected by Dex authproxy connector.
 	r.Header.Set(h.cfg.UserHeader, claims.Username)
 
-	// Dex reads a single X-Remote-Group header; multiple values can be set via
-	// multiple headers with the same name, which net/http handles transparently.
-	r.Header.Del(h.cfg.GroupHeader)
-	for _, role := range claims.Roles {
-		r.Header.Add(h.cfg.GroupHeader, role)
+	// Dex authproxy connector uses Header.Get() which returns only the first
+	// header value. Join all roles as a comma-separated string in a single
+	// header so Dex splits them correctly into individual groups.
+	if len(claims.Roles) > 0 {
+		r.Header.Set(h.cfg.GroupHeader, strings.Join(claims.Roles, ","))
+	} else {
+		r.Header.Del(h.cfg.GroupHeader)
 	}
 
 	h.rp.ServeHTTP(w, r)
